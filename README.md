@@ -1,16 +1,24 @@
-# React + Vite
+# URL Lyhentäjä
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Pikainen Reacting ja Tailwindin harjoittelua varten tehty linkkien lyhennys sivu
 
-Currently, two official plugins are available:
+## Ominaisuudet
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- URL Osoitteiden lyhennys
+- Lyhyestä linkistä automaattinen redirect pitkään linkkiin
+- Admin paneeli, josta näkee kaikki tehdyt linkit sekä niiden klikkausmäärät
+- Admin paneelista voi myös muokata lyhytlinkkejä!!
 
-## React Compiler
+## Käytetyt teknologiat
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Frontend
+- ReactJS
+- Tailwind CSS
 
-## Expanding the Oxlint configuration
+### Backend
+- Vercel (Node.js)
+- PostgreSQL ja Prisma ORM
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Preview
+
+Sivua voi kokeilla osoitteessa https://link.palmumedia.tk/
