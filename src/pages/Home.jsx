@@ -44,8 +44,8 @@ export default function Home() {
     }
     return (
         <div>
-            <div className="flex items-center justify-center py-12 px-12">
-                <div className="w-full max-w-5xl rounded-3xl bg-slate-900 border border-slate-800 shadow-[0_0_40px_rgba(139,92,246,0.15)] p-12">
+            <div className="flex items-center justify-center py-6 px-6 sm:py-12 sm:px-12">
+                <div className="w-full max-w-5xl rounded-3xl bg-slate-900 border border-slate-800 shadow-[0_0_40px_rgba(139,92,246,0.15)] p-4 sm:p-12">
 
                     <h1 className="text-5xl font-bold text-white">
                         URL Lyhentäjä
@@ -97,8 +97,8 @@ export default function Home() {
             </div>
 
 
-            <button className="absolute left-5 top-5" onClick={() => { navigate("/login"); }}>
-                <img className="w-6 h-6 opacity-0 transition-opacity duration-300 hover:scale-110 hover:opacity-100 cursor-pointer" src={loginIcon} alt="Kirjaudu sisään" onLoad={(e) => e.currentTarget.classList.add("opacity-70")}/>
+            <button className="absolute left-1 top-1.5 sm:left-5 sm:top-5" onClick={() => { navigate("/login"); }}>
+                <img className="w-4 h-4 sm:w-6 sm:h-6 opacity-0 transition-opacity duration-300 hover:scale-110 hover:opacity-100 cursor-pointer" src={loginIcon} alt="Kirjaudu sisään" onLoad={(e) => e.currentTarget.classList.add("opacity-70")}/>
             </button>
         </div>
     );
