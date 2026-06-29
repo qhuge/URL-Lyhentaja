@@ -8,6 +8,7 @@ Pikainen Reacting ja Tailwindin harjoittelua varten tehty linkkien lyhennys sivu
 - Lyhyestä linkistä automaattinen redirect pitkään linkkiin
 - Admin paneeli, josta näkee kaikki tehdyt linkit sekä niiden klikkausmäärät
 - Admin paneelista voi myös muokata lyhytlinkkejä!!
+- Cloudflare Turnstile blockkaa botit!
 
 ## Käytetyt teknologiat
 
