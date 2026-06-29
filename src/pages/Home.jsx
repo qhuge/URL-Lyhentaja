@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import UrlInput from "../components/UrlInput";
 import { createShortUrl } from "../utils/CreateShortUrl.js";
 import loginIcon from "../assets/login.svg";
@@ -11,6 +11,10 @@ export default function Home() {
     const [loading, setLoading] = useState(false);
     const [hasCopied, setHasCopied] = useState(false);
 
+    const [invalidToken, setInvalidToken] = useState(false);
+
+    const [turnstileToken, setTurnstileToken] = useState("");
+
     const isValidUrl = (string) => {
         try {
             new URL(string)
@@ -20,11 +24,42 @@ export default function Home() {
         }
     }
 
+    //load the turnstile
+    useEffect(() => {
+        const script = document.createElement("script");
+        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+        script.async = true;
+        script.defer = true;
+
+        document.body.appendChild(script);
+
+        return () => {
+            document.body.removeChild(script);
+        };
+    }, []);
+    useEffect(() => {
+        window.onTurnstileSuccess = (token) => {
+            setTurnstileToken(token)
+            if (invalidToken) {
+                setInvalidToken(false);
+            }
+            console.log('Challenge Success:', token);
+        };
+
+        return () => {
+            delete window.onTurnstileSuccess;
+        };
+    }, []);
 
     const navigate = useNavigate();
 
     async function handleSubmit() {
         if (url === lastSubmittedUrl || !isValidUrl(url)) return;
+
+        if (turnstileToken == "") {
+            setInvalidToken(true);
+            return;
+        }
 
         try {
             setLoading(true);
@@ -32,7 +67,7 @@ export default function Home() {
             setLastSubmittedUrl(url);
 
             //Get new url
-            let short = await createShortUrl(url);
+            let short = await createShortUrl(url, turnstileToken);
 
             if (short !== undefined) {
                 setShortUrl("https://link.palmumedia.tk/" + short);
@@ -60,6 +95,13 @@ export default function Home() {
                         onSubmit={handleSubmit}
                         loading={loading}
                     />
+
+                    <div class="cf-turnstile mt-6 ml-2" data-sitekey="0x4AAAAAADs4VGqprbiR8Pnl" data-theme="dark" data-callback="onTurnstileSuccess" data-appearance="interaction-only"></div>
+
+                    {invalidToken && (
+                        <div className="text-red-500 ml-2">Complete the challenge</div>
+                    )}
+
 
                     {shortUrl && (
                         <div className="mt-6 p-4 rounded-xl bg-slate-800 border border-slate-700 text-white">
@@ -98,7 +140,7 @@ export default function Home() {
 
 
             <button className="absolute left-1 top-1.5 sm:left-5 sm:top-5" onClick={() => { navigate("/login"); }}>
-                <img className="w-4 h-4 sm:w-6 sm:h-6 opacity-0 transition-opacity duration-300 hover:scale-110 hover:opacity-100 cursor-pointer" src={loginIcon} alt="Kirjaudu sisään" onLoad={(e) => e.currentTarget.classList.add("opacity-70")}/>
+                <img className="w-4 h-4 sm:w-6 sm:h-6 opacity-0 transition-opacity duration-300 hover:scale-110 hover:opacity-100 cursor-pointer" src={loginIcon} alt="Kirjaudu sisään" onLoad={(e) => e.currentTarget.classList.add("opacity-70")} />
             </button>
         </div>
     );

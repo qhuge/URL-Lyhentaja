@@ -1,4 +1,4 @@
-export async function createShortUrl(originalUrl) {
+export async function createShortUrl(originalUrl, tkn) {
 
     const response = await fetch("/api/shorten", {
         method: "POST",
@@ -6,7 +6,8 @@ export async function createShortUrl(originalUrl) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            "url": originalUrl
+            "url": originalUrl,
+            "turnstileToken": tkn,
         })
     });
 

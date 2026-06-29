@@ -12,13 +12,45 @@ function generateCode(length = 4) {
     return result;
 }
 
+async function validateTurnstile(token) {
+  try {
+    const response = await fetch(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          secret: process.env.TURNSTILE_KEY,
+          response: token,
+        }),
+      },
+    );
+
+    const result = await response.json();
+    return result;
+  } catch (error) {
+    console.error("Turnstile validation error:", error);
+    return { success: false, "error-codes": ["internal-error"] };
+  }
+}
+
 export default async function handler(req, res) {
     if (req.method !== "POST") {
         return res.status(405).json({ error: "Method not allowed" });
     }
 
     try {
-        const { url } = req.body;
+
+        //validate the turnstile
+        const turnStile = await validateTurnstile(req.body.turnstileToken)
+
+        if (!turnStile.success) {
+            return res.status(401).json({ error: "Incorrect captcha" });
+        }
+
+        const url = req.body.url;
 
         if (!url) {
             return res.status(400).json({ error: "Missing URL" });
