@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import UrlInput from "../components/UrlInput";
 import { createShortUrl } from "../utils/CreateShortUrl.js";
 import loginIcon from "../assets/login.svg";
@@ -6,14 +6,15 @@ import { useNavigate } from "react-router-dom";
 
 export default function Home() {
     const [url, setUrl] = useState("");
-    const [lastSubmittedUrl, setLastSubmittedUrl] = useState("");
     const [shortUrl, setShortUrl] = useState(null);
     const [loading, setLoading] = useState(false);
     const [hasCopied, setHasCopied] = useState(false);
 
     const [invalidToken, setInvalidToken] = useState(false);
 
-    const [turnstileToken, setTurnstileToken] = useState("");
+    const turnstileTokenRef = useRef("");
+    const lastSubmittedUrl = useRef("");
+    const turnstileRef = useRef(null);
 
     const isValidUrl = (string) => {
         try {
@@ -26,37 +27,43 @@ export default function Home() {
 
     //load the turnstile
     useEffect(() => {
+        function renderWidget() {
+            if (!window.turnstile || !turnstileRef.current) return;
+
+            window.turnstile.render(turnstileRef.current, {
+                sitekey: "0x4AAAAAADs4VGqprbiR8Pnl",
+                theme: "dark",
+                appearance: "interaction-only",
+                callback: (token) => {
+                    turnstileTokenRef.current = token;
+                    setInvalidToken(false);
+                },
+            });
+        }
+
+        if (window.turnstile) {
+            renderWidget();
+            return;
+        }
+
         const script = document.createElement("script");
-        script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+        script.src =
+            "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
         script.async = true;
         script.defer = true;
 
+        script.onload = renderWidget;
+
         document.body.appendChild(script);
-
-        return () => {
-            document.body.removeChild(script);
-        };
-    }, []);
-    useEffect(() => {
-        window.onTurnstileSuccess = (token) => {
-            setTurnstileToken(token)
-            if (invalidToken) {
-                setInvalidToken(false);
-            }
-            console.log('Challenge Success:', token);
-        };
-
-        return () => {
-            delete window.onTurnstileSuccess;
-        };
     }, []);
 
     const navigate = useNavigate();
 
     async function handleSubmit() {
-        if (url === lastSubmittedUrl || !isValidUrl(url)) return;
+        if (url === lastSubmittedUrl.current || !isValidUrl(url)) return;
 
-        if (turnstileToken == "") {
+        if (turnstileTokenRef.current == "") {
             setInvalidToken(true);
             return;
         }
@@ -64,10 +71,10 @@ export default function Home() {
         try {
             setLoading(true);
 
-            setLastSubmittedUrl(url);
+            lastSubmittedUrl.current = url;
 
             //Get new url
-            let short = await createShortUrl(url, turnstileToken);
+            let short = await createShortUrl(url, turnstileTokenRef.current);
 
             if (short !== undefined) {
                 setShortUrl("https://link.palmumedia.tk/" + short);
@@ -96,10 +103,13 @@ export default function Home() {
                         loading={loading}
                     />
 
-                    <div class="cf-turnstile mt-6 ml-2" data-sitekey="0x4AAAAAADs4VGqprbiR8Pnl" data-theme="dark" data-callback="onTurnstileSuccess" data-appearance="interaction-only"></div>
+                    <div
+                        ref={turnstileRef}
+                        className="mt-6"
+                    ></div>
 
                     {invalidToken && (
-                        <div className="text-red-500 ml-2">Complete the challenge</div>
+                        <div className="text-red-500 ml-2 opacity-80">Complete the challenge</div>
                     )}
 
 

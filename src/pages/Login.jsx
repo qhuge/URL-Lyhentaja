@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -8,41 +8,75 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [isLoggingIn, setIsLoggingIn] = useState(false);
 
+    const [invalidToken, setInvalidToken] = useState(false);
+    const turnstileToken = useRef("");
+    const turnstileRef = useRef(null);
+    const widgetId = useRef(null);
+
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        async function initialize() {
+            const token = localStorage.getItem("token");
 
-        if (token) {
-            setIsLoggingIn(true);
-
-            async function verify() {
-                let bearer = "Bearer " + token;
+            if (token) {
+                setIsLoggingIn(true);
 
                 const response = await fetch("/api/verify", {
-                    method: "GET",
                     headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": bearer
+                        Authorization: `Bearer ${token}`,
                     },
                 });
 
                 const data = await response.json();
 
-                //if token is valid, then go to admin page, else remove the local token from storage
                 if (data.valid) {
                     navigate("/admin", { replace: true });
-                } else {
-                    localStorage.removeItem("token");
-                    setIsLoggingIn(false);
+                    return; // dont load turnstile
                 }
+
+                localStorage.removeItem("token");
+                setIsLoggingIn(false);
             }
 
-            verify();
-        }
-    }, []);
+            // No valid session -> load Turnstile
+            function renderWidget() {
+                if (!window.turnstile || !turnstileRef.current) return;
 
+                widgetId.current = window.turnstile.render(turnstileRef.current, {
+                    sitekey: "0x4AAAAAADs4VGqprbiR8Pnl",
+                    theme: "dark",
+                    callback: (token) => {
+                        turnstileToken.current = token;
+                        setInvalidToken(false);
+                    },
+                });
+            }
+
+            if (window.turnstile) {
+                renderWidget();
+                return;
+            }
+
+            const script = document.createElement("script");
+            script.src =
+                "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+            script.async = true;
+            script.defer = true;
+            script.onload = renderWidget;
+
+            document.body.appendChild(script);
+        }
+
+        initialize();
+    }, [navigate]);
 
     async function handleLogin() {
         if (isLoggingIn) return;
+
+        if (turnstileToken.current == "") {
+            setInvalidToken(true);
+            return;
+        }
+
 
         setIsLoggingIn(true);
 
@@ -54,13 +88,18 @@ export default function Login() {
                 },
                 body: JSON.stringify({
                     username,
-                    password
+                    password,
+                    "turnstileToken": turnstileToken.current,
                 })
             });
 
             const data = await response.json();
 
             if (!response.ok) {
+                //request new turnstile token
+                turnstileToken.current = "";
+                window.turnstile.reset(widgetId.current);
+
                 throw new Error(data.error);
             }
 
@@ -107,14 +146,23 @@ export default function Login() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Salasana"
-                        className="w-full mb-6 rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white placeholder:text-slate-500 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition"
+                        className="w-full rounded-xl border border-slate-700 bg-slate-800 px-4 py-3 text-white placeholder:text-slate-500 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition"
                     />
+
+                    <div
+                        ref={turnstileRef}
+                        className="mt-6 min-w-[300px] min-h-[65px]"
+                    ></div>
+
+                    {invalidToken && (
+                        <div className="text-red-500 opacity-80">Complete the challenge</div>
+                    )}
 
                     {/* Button */}
                     <button
                         onClick={() => { handleLogin() }}
                         disabled={isLoggingIn}
-                        className="disabled:opacity-50 disabled:cursor-not-allowed w-full rounded-xl bg-violet-600 py-3 text-white font-semibold hover:bg-violet-500 transition active:scale-[0.98] mb-2"
+                        className="disabled:opacity-50 disabled:cursor-not-allowed w-full rounded-xl bg-violet-600 py-3 mt-6 text-white font-semibold hover:bg-violet-500 transition active:scale-[0.98] mb-2"
                     >
                         {isLoggingIn ? "Kirjaudutaan..." : "Kirjaudu"}
                     </button>
