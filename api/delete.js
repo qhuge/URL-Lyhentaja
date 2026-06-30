@@ -8,9 +8,11 @@ export default async function handler(req, res) {
     });
 
     if (!session || session.expiresAt < new Date()) {
-        await prisma.session.delete({
-            where: { token }
-        });
+        if (session) {
+            await prisma.session.delete({
+                where: { token }
+            });
+        }
 
         return res.status(401).json({ error: "Unauthorized" });
     }

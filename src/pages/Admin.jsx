@@ -40,7 +40,7 @@ export default function Admin() {
     async function deleteUrl(id) {
         if (submittingEdit) return;
 
-        await fetch("/api/delete", {
+        const res = await fetch("/api/delete", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -49,6 +49,10 @@ export default function Admin() {
             body: JSON.stringify({ id })
         });
 
+        if (!res.ok){
+            navigate("/", { replace: true })
+        }
+
         setUrls(urls.filter(u => u.id !== id));
     }
 
@@ -56,7 +60,7 @@ export default function Admin() {
         if (submittingEdit) return;
 
         setSubmittingEdit(true);
-        await fetch("/api/modify", {
+        const res = await fetch("/api/modify", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -64,6 +68,10 @@ export default function Admin() {
             },
             body: JSON.stringify({ id, newCode })
         });
+
+        if (!res.ok){
+            navigate("/", { replace: true })
+        }
 
         setUrls(
             urls.map(u =>

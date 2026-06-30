@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/login",
+      "destination": "/"
+    },
+    {
+      "source": "/admin",
+      "destination": "/"
+    },
+    {
       "source": "/:code",
       "destination": "/api/:code"
     }

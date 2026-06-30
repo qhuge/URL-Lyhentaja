@@ -151,7 +151,7 @@ export default function Login() {
 
                     <div
                         ref={turnstileRef}
-                        className="mt-6 min-w-[300px] min-h-[65px]"
+                        className="mt-6 min-w-75 min-h-16.25"//min width 300px, height 65px
                     ></div>
 
                     {invalidToken && (
