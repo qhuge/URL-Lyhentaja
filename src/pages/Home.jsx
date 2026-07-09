@@ -77,7 +77,10 @@ export default function Home() {
             let short = await createShortUrl(url, turnstileTokenRef.current);
 
             if (short !== undefined) {
-                setShortUrl("https://link.palmumedia.tk/" + short);
+                //get the current location to add it to the final url
+                let currentLocation = window.location; 
+
+                setShortUrl(currentLocation + short);
             }
         } finally {
             setLoading(false);
