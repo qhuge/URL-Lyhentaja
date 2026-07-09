@@ -41,4 +41,7 @@ prisma/migrations/dev/
 .vercel/
 .vercel
 .env*
-!.env.example
+
+# Allow the example .env files
+!.env.example.backend
+!.env.example.frontend

@@ -40,9 +40,9 @@ export default function Login() {
             // No valid session -> load Turnstile
             function renderWidget() {
                 if (!window.turnstile || !turnstileRef.current) return;
-
+                
                 widgetId.current = window.turnstile.render(turnstileRef.current, {
-                    sitekey: "0x4AAAAAADs4VGqprbiR8Pnl",
+                    sitekey: import.meta.env.VITE_TURNSTILE_PUBLIC_KEY,
                     theme: "dark",
                     callback: (token) => {
                         turnstileToken.current = token;

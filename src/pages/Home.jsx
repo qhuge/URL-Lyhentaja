@@ -31,7 +31,7 @@ export default function Home() {
             if (!window.turnstile || !turnstileRef.current) return;
 
             window.turnstile.render(turnstileRef.current, {
-                sitekey: "0x4AAAAAADs4VGqprbiR8Pnl",
+                sitekey: import.meta.env.VITE_TURNSTILE_PUBLIC_KEY,
                 theme: "dark",
                 appearance: "interaction-only",
                 callback: (token) => {
